@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, RefreshCw, Zap, Check } from 'lucide-react';
+import { Upload, RefreshCw, Zap, Check, Car, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ObjectDetection = () => {
@@ -9,14 +9,21 @@ const ObjectDetection = () => {
   const [analyzed, setAnalyzed] = useState(false);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   
-  // Simulated detection results
+  // Updated detection results focused on vehicles and pedestrians
   const detectionObjects = [
     { type: 'Car', confidence: 98.2, color: 'green', x: 30, y: 25, width: 120, height: 70 },
-    { type: 'Car', confidence: 95.7, color: 'green', x: 240, y: 35, width: 100, height: 60 },
-    { type: 'Truck', confidence: 91.3, color: 'blue', x: 400, y: 30, width: 150, height: 80 },
-    { type: 'Pedestrian', confidence: 88.5, color: 'yellow', x: 180, y: 120, width: 40, height: 80 },
-    { type: 'Motorcycle', confidence: 86.9, color: 'purple', x: 320, y: 120, width: 60, height: 40 },
+    { type: 'SUV', confidence: 95.7, color: 'green', x: 240, y: 35, width: 100, height: 60 },
+    { type: 'Truck', confidence: 91.3, color: 'green', x: 400, y: 30, width: 150, height: 80 },
+    { type: 'Pedestrian', confidence: 88.5, color: 'blue', x: 180, y: 120, width: 40, height: 80 },
+    { type: 'Pedestrian', confidence: 86.9, color: 'blue', x: 320, y: 120, width: 40, height: 80 },
   ];
+
+  // Vehicle and pedestrian statistics
+  const vehicleCount = detectionObjects.filter(obj => 
+    ['Car', 'SUV', 'Truck', 'Bus', 'Motorcycle'].includes(obj.type)).length;
+  
+  const pedestrianCount = detectionObjects.filter(obj => 
+    obj.type === 'Pedestrian').length;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,10 +59,10 @@ const ObjectDetection = () => {
       <div className="container-custom">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className="heading-lg mb-4 animate-fade-in">
-            Experience Object Detection in Action
+            Vehicle & Pedestrian Detection
           </h2>
           <p className="subtitle text-lg animate-fade-in">
-            Upload a traffic image to see our AI detection capabilities in real-time
+            Upload a traffic image to detect vehicles and pedestrians in real-time
           </p>
         </div>
 
@@ -65,9 +72,9 @@ const ObjectDetection = () => {
               {/* Left side - Upload and controls */}
               <div className="flex-1">
                 <div className="mb-6">
-                  <h3 className="text-lg font-medium mb-2">Traffic Image Analysis</h3>
+                  <h3 className="text-lg font-medium mb-2">Traffic Scene Analysis</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Upload a traffic scene to detect and classify vehicles, pedestrians, and road infrastructure.
+                    Upload a traffic scene to detect vehicles and pedestrians for traffic flow analysis.
                   </p>
                   
                   {!currentImage ? (
@@ -131,7 +138,31 @@ const ObjectDetection = () => {
 
                 {analyzed && (
                   <div className="animate-fade-in">
-                    <h4 className="font-medium mb-2">Detection Results</h4>
+                    <h4 className="font-medium mb-4">Detection Summary</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-800/30 flex items-center justify-center mr-3">
+                          <Car className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-green-800 dark:text-green-300">Vehicles</p>
+                          <p className="text-2xl font-bold text-green-700 dark:text-green-400">{vehicleCount}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-800/30 flex items-center justify-center mr-3">
+                          <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-blue-800 dark:text-blue-300">Pedestrians</p>
+                          <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{pedestrianCount}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <h4 className="font-medium mb-2">Detailed Results</h4>
                     <div className="space-y-2">
                       {detectionObjects.map((obj, index) => (
                         <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
