@@ -92,6 +92,7 @@ const DetectionPage = () => {
                     <Tabs 
                       value={activeTab}
                       onValueChange={setActiveTab}
+                      defaultValue="image"
                     >
                       <TabsList className="bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 p-1">
                         <TabsTrigger 
@@ -121,198 +122,200 @@ const DetectionPage = () => {
                 </CardHeader>
                 
                 <CardContent className="p-6">
-                  <TabsContent value="image" className="mt-0">
-                    <div className="mb-6">
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Upload a traffic image to analyze and detect objects like vehicles, pedestrians, and infrastructure elements.
-                      </p>
-                      
-                      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                        <Button
-                          className="bg-traffic-600 hover:bg-traffic-700"
-                          onClick={() => document.getElementById('image-upload')?.click()}
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Upload Image
-                        </Button>
-                        <input
-                          id="image-upload"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleImageUpload}
-                        />
+                  <Tabs value={activeTab} defaultValue="image">
+                    <TabsContent value="image" className="mt-0">
+                      <div className="mb-6">
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Upload a traffic image to analyze and detect objects like vehicles, pedestrians, and infrastructure elements.
+                        </p>
                         
-                        {currentImage && (
-                          <>
-                            <Button
-                              variant="outline"
-                              className="border-gray-200 dark:border-gray-700"
-                              onClick={resetDemo}
-                            >
-                              Reset
-                            </Button>
-                            
-                            <Button
-                              className={cn(
-                                "ml-auto",
-                                analyzing ? "bg-gray-400 hover:bg-gray-400" : "bg-traffic-600 hover:bg-traffic-700"
-                              )}
-                              onClick={handleAnalyzeClick}
-                              disabled={analyzing}
-                            >
-                              {analyzing ? (
-                                <>
-                                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                  Analyzing...
-                                </>
-                              ) : analyzed ? (
-                                <>
-                                  <Check className="h-4 w-4 mr-2" />
-                                  Analyzed
-                                </>
-                              ) : (
-                                <>
-                                  <Play className="h-4 w-4 mr-2" />
-                                  Analyze
-                                </>
-                              )}
-                            </Button>
-                          </>
+                        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                          <Button
+                            className="bg-traffic-600 hover:bg-traffic-700"
+                            onClick={() => document.getElementById('image-upload')?.click()}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Image
+                          </Button>
+                          <input
+                            id="image-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageUpload}
+                          />
+                          
+                          {currentImage && (
+                            <>
+                              <Button
+                                variant="outline"
+                                className="border-gray-200 dark:border-gray-700"
+                                onClick={resetDemo}
+                              >
+                                Reset
+                              </Button>
+                              
+                              <Button
+                                className={cn(
+                                  "ml-auto",
+                                  analyzing ? "bg-gray-400 hover:bg-gray-400" : "bg-traffic-600 hover:bg-traffic-700"
+                                )}
+                                onClick={handleAnalyzeClick}
+                                disabled={analyzing}
+                              >
+                                {analyzing ? (
+                                  <>
+                                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                    Analyzing...
+                                  </>
+                                ) : analyzed ? (
+                                  <>
+                                    <Check className="h-4 w-4 mr-2" />
+                                    Analyzed
+                                  </>
+                                ) : (
+                                  <>
+                                    <Play className="h-4 w-4 mr-2" />
+                                    Analyze
+                                  </>
+                                )}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Detection preview */}
+                      <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 mb-6">
+                        {currentImage ? (
+                          <img 
+                            src={currentImage} 
+                            alt="Traffic scene" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                            <div className="text-center">
+                              <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                              <p>Upload an image to begin detection</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Detection overlay */}
+                        {analyzed && (
+                          <div className="absolute inset-0 pointer-events-none">
+                            {detectionResults.map((obj, index) => (
+                              <div 
+                                key={index}
+                                className="absolute border-2 flex items-start justify-between"
+                                style={{
+                                  borderColor: obj.color,
+                                  left: `${obj.x}px`,
+                                  top: `${obj.y}px`,
+                                  width: `${obj.width}px`,
+                                  height: `${obj.height}px`
+                                }}
+                              >
+                                <div 
+                                  className="text-xs text-white px-1 py-0.5 leading-tight mt-[-20px]"
+                                  style={{ backgroundColor: obj.color }}
+                                >
+                                  {obj.type} ({obj.confidence.toFixed(1)}%)
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {analyzing && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <div className="text-white text-center">
+                              <RefreshCw className="h-12 w-12 mx-auto mb-3 animate-spin" />
+                              <p>Analyzing image...</p>
+                              <p className="text-sm text-gray-300 mt-2">Detecting objects and classifying elements</p>
+                            </div>
+                          </div>
                         )}
                       </div>
-                    </div>
-                    
-                    {/* Detection preview */}
-                    <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 mb-6">
-                      {currentImage ? (
-                        <img 
-                          src={currentImage} 
-                          alt="Traffic scene" 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                          <div className="text-center">
-                            <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                            <p>Upload an image to begin detection</p>
-                          </div>
-                        </div>
-                      )}
                       
-                      {/* Detection overlay */}
                       {analyzed && (
-                        <div className="absolute inset-0 pointer-events-none">
-                          {detectionResults.map((obj, index) => (
-                            <div 
-                              key={index}
-                              className="absolute border-2 flex items-start justify-between"
-                              style={{
-                                borderColor: obj.color,
-                                left: `${obj.x}px`,
-                                top: `${obj.y}px`,
-                                width: `${obj.width}px`,
-                                height: `${obj.height}px`
-                              }}
-                            >
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 animate-fade-in">
+                          <h3 className="font-medium mb-3">Detection Results</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {detectionResults.map((result, idx) => (
                               <div 
-                                className="text-xs text-white px-1 py-0.5 leading-tight mt-[-20px]"
-                                style={{ backgroundColor: obj.color }}
+                                key={idx} 
+                                className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-100 dark:border-gray-600"
                               >
-                                {obj.type} ({obj.confidence.toFixed(1)}%)
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="font-medium text-sm">{result.type}</div>
+                                  <Badge 
+                                    className={cn(
+                                      result.confidence > 95 ? "bg-green-500" :
+                                      result.confidence > 90 ? "bg-green-600" :
+                                      result.confidence > 85 ? "bg-amber-500" : "bg-amber-600"
+                                    )}
+                                  >
+                                    {result.confidence.toFixed(1)}%
+                                  </Badge>
+                                </div>
+                                <div className="w-full h-2 bg-gray-100 dark:bg-gray-600 rounded-full overflow-hidden">
+                                  <div 
+                                    className={cn(
+                                      "h-full rounded-full",
+                                      result.confidence > 95 ? "bg-green-500" :
+                                      result.confidence > 90 ? "bg-green-600" :
+                                      result.confidence > 85 ? "bg-amber-500" : "bg-amber-600"
+                                    )}
+                                    style={{ width: `${result.confidence}%` }}
+                                  ></div>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {analyzing && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <div className="text-white text-center">
-                            <RefreshCw className="h-12 w-12 mx-auto mb-3 animate-spin" />
-                            <p>Analyzing image...</p>
-                            <p className="text-sm text-gray-300 mt-2">Detecting objects and classifying elements</p>
+                            ))}
                           </div>
                         </div>
                       )}
-                    </div>
+                    </TabsContent>
                     
-                    {analyzed && (
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 animate-fade-in">
-                        <h3 className="font-medium mb-3">Detection Results</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {detectionResults.map((result, idx) => (
-                            <div 
-                              key={idx} 
-                              className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-100 dark:border-gray-600"
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="font-medium text-sm">{result.type}</div>
-                                <Badge 
-                                  className={cn(
-                                    result.confidence > 95 ? "bg-green-500" :
-                                    result.confidence > 90 ? "bg-green-600" :
-                                    result.confidence > 85 ? "bg-amber-500" : "bg-amber-600"
-                                  )}
-                                >
-                                  {result.confidence.toFixed(1)}%
-                                </Badge>
-                              </div>
-                              <div className="w-full h-2 bg-gray-100 dark:bg-gray-600 rounded-full overflow-hidden">
-                                <div 
-                                  className={cn(
-                                    "h-full rounded-full",
-                                    result.confidence > 95 ? "bg-green-500" :
-                                    result.confidence > 90 ? "bg-green-600" :
-                                    result.confidence > 85 ? "bg-amber-500" : "bg-amber-600"
-                                  )}
-                                  style={{ width: `${result.confidence}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="video" className="mt-0">
-                    <div className="h-80 flex items-center justify-center border border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 p-6">
-                      <div className="text-center">
-                        <Film className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                        <h3 className="text-lg font-medium mb-2">Video Analysis</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Upload a video file to analyze traffic patterns over time
-                        </p>
-                        <Button className="bg-traffic-600 hover:bg-traffic-700">
-                          <Upload className="h-4 w-4 mr-2" />
-                          Upload Video
-                        </Button>
-                      </div>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="camera" className="mt-0">
-                    <div className="h-80 flex items-center justify-center border border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 p-6">
-                      <div className="text-center">
-                        <Camera className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                        <h3 className="text-lg font-medium mb-2">Live Camera Feed</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Connect to a camera feed for real-time traffic analysis
-                        </p>
-                        <div className="flex gap-3 justify-center">
+                    <TabsContent value="video" className="mt-0">
+                      <div className="h-80 flex items-center justify-center border border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 p-6">
+                        <div className="text-center">
+                          <Film className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                          <h3 className="text-lg font-medium mb-2">Video Analysis</h3>
+                          <p className="text-muted-foreground mb-4">
+                            Upload a video file to analyze traffic patterns over time
+                          </p>
                           <Button className="bg-traffic-600 hover:bg-traffic-700">
-                            <Play className="h-4 w-4 mr-2" />
-                            Start Stream
-                          </Button>
-                          <Button variant="outline" className="border-gray-200 dark:border-gray-700">
-                            <Settings className="h-4 w-4 mr-2" />
-                            Settings
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Video
                           </Button>
                         </div>
                       </div>
-                    </div>
-                  </TabsContent>
+                    </TabsContent>
+                    
+                    <TabsContent value="camera" className="mt-0">
+                      <div className="h-80 flex items-center justify-center border border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 p-6">
+                        <div className="text-center">
+                          <Camera className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                          <h3 className="text-lg font-medium mb-2">Live Camera Feed</h3>
+                          <p className="text-muted-foreground mb-4">
+                            Connect to a camera feed for real-time traffic analysis
+                          </p>
+                          <div className="flex gap-3 justify-center">
+                            <Button className="bg-traffic-600 hover:bg-traffic-700">
+                              <Play className="h-4 w-4 mr-2" />
+                              Start Stream
+                            </Button>
+                            <Button variant="outline" className="border-gray-200 dark:border-gray-700">
+                              <Settings className="h-4 w-4 mr-2" />
+                              Settings
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
               
