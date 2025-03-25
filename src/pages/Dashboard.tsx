@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -18,6 +19,12 @@ import { cn } from '@/lib/utils';
 import DigitalTwin from '@/components/dashboard/DigitalTwin';
 import IncidentReport from '@/components/dashboard/IncidentReport';
 import TrafficAnalysis from '@/components/dashboard/TrafficAnalysis';
+import LiveTrafficFeed from '@/components/dashboard/LiveTrafficFeed';
+import ExpandedView from '@/components/dashboard/ExpandedView';
+import ExpandedDigitalTwin from '@/components/dashboard/ExpandedDigitalTwin';
+import ExpandedIncidentReport from '@/components/dashboard/ExpandedIncidentReport';
+import ExpandedTrafficAnalysis from '@/components/dashboard/ExpandedTrafficAnalysis';
+import ExpandedVideoFeed from '@/components/dashboard/ExpandedVideoFeed';
 
 // Sample data
 const trafficData = [
@@ -49,8 +56,19 @@ const incidentData = [
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
+type ExpandedViewType = 'digitalTwin' | 'incidents' | 'analysis' | 'videoFeed' | null;
+
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [expandedView, setExpandedView] = useState<ExpandedViewType>(null);
+
+  const handleExpandView = (view: ExpandedViewType) => {
+    setExpandedView(view);
+  };
+
+  const handleCloseExpandedView = () => {
+    setExpandedView(null);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -192,16 +210,17 @@ const Dashboard = () => {
             </div>
           
             <TabsContent value="overview">
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <DigitalTwin />
-                <IncidentReport />
-                <TrafficAnalysis />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <DigitalTwin onExpand={() => handleExpandView('digitalTwin')} />
+                <LiveTrafficFeed onExpand={() => handleExpandView('videoFeed')} />
+                <IncidentReport onExpand={() => handleExpandView('incidents')} />
+                <TrafficAnalysis onExpand={() => handleExpandView('analysis')} />
               </div>
             </TabsContent>
             
             <TabsContent value="incidents">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <IncidentReport />
+                <IncidentReport onExpand={() => handleExpandView('incidents')} />
                 <Card className="col-span-1 lg:col-span-2 border-gray-100 dark:border-gray-800">
                   <CardHeader className="pb-2">
                     <CardTitle>Traffic Incidents</CardTitle>
@@ -235,7 +254,7 @@ const Dashboard = () => {
             
             <TabsContent value="analysis">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <TrafficAnalysis />
+                <TrafficAnalysis onExpand={() => handleExpandView('analysis')} />
                 <Card className="col-span-1 border-gray-100 dark:border-gray-800">
                   <CardHeader className="pb-2">
                     <CardTitle>Vehicle Distribution</CardTitle>
@@ -271,9 +290,47 @@ const Dashboard = () => {
         </div>
       </main>
       
+      {/* Expanded Views */}
+      {expandedView === 'digitalTwin' && (
+        <ExpandedView 
+          title="Digital Twin Visualization" 
+          onClose={handleCloseExpandedView}
+        >
+          <ExpandedDigitalTwin />
+        </ExpandedView>
+      )}
+
+      {expandedView === 'incidents' && (
+        <ExpandedView 
+          title="Incident Management" 
+          onClose={handleCloseExpandedView}
+        >
+          <ExpandedIncidentReport />
+        </ExpandedView>
+      )}
+
+      {expandedView === 'analysis' && (
+        <ExpandedView 
+          title="Traffic Analysis Dashboard" 
+          onClose={handleCloseExpandedView}
+        >
+          <ExpandedTrafficAnalysis />
+        </ExpandedView>
+      )}
+
+      {expandedView === 'videoFeed' && (
+        <ExpandedView 
+          title="Live Traffic Video Feed" 
+          onClose={handleCloseExpandedView}
+        >
+          <ExpandedVideoFeed />
+        </ExpandedView>
+      )}
+      
       <Footer />
     </div>
   );
 };
 
 export default Dashboard;
+
