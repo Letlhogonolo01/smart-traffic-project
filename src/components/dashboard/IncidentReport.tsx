@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Ambulance, MapPin, CarCrash } from 'lucide-react';
+import { AlertTriangle, Ambulance, MapPin, Car } from 'lucide-react';
 
 const incidents = [
   {
@@ -53,7 +53,7 @@ const IncidentReport = () => {
               <div className="flex items-start gap-3">
                 <div className="mt-1">
                   {incident.type === 'Accident' ? (
-                    <CarCrash className="h-5 w-5 text-red-500" />
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
                   ) : incident.type === 'Traffic Jam' ? (
                     <Car className="h-5 w-5 text-amber-500" />
                   ) : (
