@@ -12,7 +12,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Calendar, Clock, MapPin, AlertTriangle, TrendingUp, TrendingDown,
-  Car, Filter, RefreshCw, Download, BarChart2
+  Car, BarChart2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -180,33 +180,6 @@ const Dashboard = () => {
                   Analysis
                 </TabsTrigger>
               </TabsList>
-              
-              <div className="flex items-center space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="border-gray-200 dark:border-gray-700"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filter
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="border-gray-200 dark:border-gray-700"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="border-gray-200 dark:border-gray-700"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </div>
             </div>
           
             <TabsContent value="overview">
@@ -333,4 +306,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

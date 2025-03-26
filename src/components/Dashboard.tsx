@@ -64,29 +64,6 @@ const Dashboard = () => {
               </Button>
             </Link>
           </div>
-          
-          <div className="flex-1 animate-fade-in">
-            <div className="relative">
-              {/* Dashboard preview image */}
-              <div className="rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-                <div className="relative w-full aspect-[16/9] bg-gray-100 dark:bg-gray-800">
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                    <p className="text-sm">Dashboard preview</p>
-                  </div>
-                  <img 
-                    src="/dashboard-preview.jpg"
-                    alt="Traffic management dashboard"
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-              
-              {/* Decorative elements */}
-              <div className="absolute -bottom-4 -right-4 h-24 w-24 bg-traffic-50 dark:bg-traffic-900/20 rounded-xl -z-10"></div>
-              <div className="absolute -top-4 -left-4 h-16 w-16 bg-traffic-50 dark:bg-traffic-900/20 rounded-xl -z-10"></div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

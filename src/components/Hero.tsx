@@ -17,8 +17,8 @@ const Hero = () => {
       <div className="container-custom">
         <div className="relative">
           {/* Background elements */}
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute -top-40 -right-40 w-80 h-80 bg-traffic-200/30 rounded-full blur-3xl dark:bg-traffic-900/20"></div>
+          <div className="absolute -z-10 top-0 left-0 w-full h-full">
+            <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-traffic-200/30 rounded-full blur-3xl dark:bg-traffic-900/20"></div>
             <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-traffic-200/30 rounded-full blur-3xl dark:bg-traffic-900/20"></div>
           </div>
 
@@ -32,8 +32,7 @@ const Hero = () => {
             </div>
             
             <h1 className="heading-xl mb-6 animate-fade-in">
-              <span className="text-gray-900 dark:text-white">Smart Traffic Management</span>{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-traffic-600 to-blue-600">Powered by AI</span>
+              <span className="text-gray-900 dark:text-white">Smart Traffic Management</span>
             </h1>
             
             <p className="text-lg subtitle mb-8 max-w-2xl animate-fade-in">
@@ -42,7 +41,8 @@ const Hero = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 mb-10 w-full sm:w-auto sm:justify-center animate-fade-in">
               <Button 
-                className="bg-traffic-600 hover:bg-traffic-700 text-white font-medium h-12 px-8"
+                className="animate-fade-in bg-traffic-600 hover:bg-traffic-700"
+                size="lg"
                 onClick={scrollToFeatures}
               >
                 Get Started <ArrowRight className="ml-2 h-4 w-4" />
@@ -51,7 +51,7 @@ const Hero = () => {
           </div>
 
           {/* Stats and features overview */}
-          <div className="mt-16 md:mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="mt-16 md:mt-24 grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               {
                 icon: <BarChart3 className="h-5 w-5 text-traffic-600" />,
@@ -62,11 +62,6 @@ const Hero = () => {
                 icon: <Shield className="h-5 w-5 text-traffic-600" />,
                 title: "Enhanced Safety",
                 description: "Identify potential hazards and dangerous situations to improve road safety"
-              },
-              {
-                icon: <Map className="h-5 w-5 text-traffic-600" />,
-                title: "Urban Planning",
-                description: "Generate insights for better urban planning and infrastructure development"
               }
             ].map((feature, i) => (
               <div 

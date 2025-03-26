@@ -1,9 +1,10 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Maximize2 } from 'lucide-react';
+import { MapPin, Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const DigitalTwin = ({ onExpand }: { onExpand?: () => void }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -12,6 +13,8 @@ const DigitalTwin = ({ onExpand }: { onExpand?: () => void }) => {
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const carModelsRef = useRef<THREE.Mesh[]>([]);
   const frameIdRef = useRef<number>(0);
+  const [activeView, setActiveView] = useState<string>('3d');
+  const congestionOverlayRef = useRef<THREE.Group | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -85,6 +88,38 @@ const DigitalTwin = ({ onExpand }: { onExpand?: () => void }) => {
     horizontalRoad.position.y = 0.01;
     horizontalRoad.position.z = -10;
     scene.add(horizontalRoad);
+
+    // Create congestion overlay - initially hidden
+    const congestionGroup = new THREE.Group();
+    congestionGroup.visible = false;
+    scene.add(congestionGroup);
+    congestionOverlayRef.current = congestionGroup;
+
+    // Create congestion hotspots
+    const createCongestionHotspot = (x: number, z: number, intensity: number) => {
+      const color = new THREE.Color();
+      // Set color based on intensity (0-1): green to red
+      color.setHSL((1 - intensity) * 0.3, 1, 0.5);
+      
+      const hotspotGeometry = new THREE.CircleGeometry(intensity * 8 + 2, 32);
+      const hotspotMaterial = new THREE.MeshBasicMaterial({ 
+        color: color, 
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.7
+      });
+      const hotspot = new THREE.Mesh(hotspotGeometry, hotspotMaterial);
+      hotspot.rotation.x = -Math.PI / 2;
+      hotspot.position.set(x, 0.1, z); // Slightly above the road
+      congestionGroup.add(hotspot);
+    };
+
+    // Add congestion hotspots at different locations
+    createCongestionHotspot(0, -10, 0.9); // Heavy congestion at intersection
+    createCongestionHotspot(20, -10, 0.7); // Medium congestion
+    createCongestionHotspot(-15, -10, 0.5); // Light congestion
+    createCongestionHotspot(0, 15, 0.3); // Very light congestion
+    createCongestionHotspot(0, -30, 0.8); // Heavy congestion
 
     // Create car models (simple cubes for now)
     const createCar = (x: number, z: number, color: number) => {
@@ -166,6 +201,38 @@ const DigitalTwin = ({ onExpand }: { onExpand?: () => void }) => {
     };
   }, []);
 
+  // Handle view changes
+  useEffect(() => {
+    if (congestionOverlayRef.current) {
+      congestionOverlayRef.current.visible = activeView === 'congestion';
+    }
+  }, [activeView]);
+
+  // Zoom in function
+  const handleZoomIn = () => {
+    if (cameraRef.current) {
+      cameraRef.current.position.z -= 10;
+      cameraRef.current.updateProjectionMatrix();
+    }
+  };
+
+  // Zoom out function
+  const handleZoomOut = () => {
+    if (cameraRef.current) {
+      cameraRef.current.position.z += 10;
+      cameraRef.current.updateProjectionMatrix();
+    }
+  };
+
+  // Reset view function
+  const handleResetView = () => {
+    if (cameraRef.current) {
+      cameraRef.current.position.set(0, 30, 50);
+      cameraRef.current.lookAt(0, 0, 0);
+      cameraRef.current.updateProjectionMatrix();
+    }
+  };
+
   return (
     <Card className="col-span-2">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -183,11 +250,56 @@ const DigitalTwin = ({ onExpand }: { onExpand?: () => void }) => {
         </Button>
       </CardHeader>
       <CardContent>
+        <div className="mb-2 flex justify-between items-center">
+          <Tabs value={activeView} onValueChange={setActiveView} className="w-[200px]">
+            <TabsList>
+              <TabsTrigger value="3d">3D View</TabsTrigger>
+              <TabsTrigger value="congestion">Congestion</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleZoomIn}>
+              <ZoomIn className="h-4 w-4 mr-1" />
+              Zoom In
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleZoomOut}>
+              <ZoomOut className="h-4 w-4 mr-1" />
+              Zoom Out
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleResetView}>
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Reset
+            </Button>
+          </div>
+        </div>
+        
         <div 
           ref={containerRef} 
           className="aspect-video w-full rounded-lg overflow-hidden"
           style={{ height: '300px' }}
         />
+        
+        {activeView === 'congestion' && (
+          <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+            <div className="flex items-center">
+              <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-1"></span>
+              <span>Light</span>
+            </div>
+            <div className="flex items-center">
+              <span className="inline-block w-3 h-3 bg-yellow-500 rounded-full mr-1"></span>
+              <span>Moderate</span>
+            </div>
+            <div className="flex items-center">
+              <span className="inline-block w-3 h-3 bg-orange-500 rounded-full mr-1"></span>
+              <span>Heavy</span>
+            </div>
+            <div className="flex items-center">
+              <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-1"></span>
+              <span>Severe</span>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
