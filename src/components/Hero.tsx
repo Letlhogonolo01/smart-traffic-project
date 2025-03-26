@@ -5,6 +5,13 @@ import { ArrowRight, BarChart3, Shield, Map } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Hero = () => {
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
       <div className="container-custom">
@@ -36,14 +43,9 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4 mb-10 w-full sm:w-auto sm:justify-center animate-fade-in">
               <Button 
                 className="bg-traffic-600 hover:bg-traffic-700 text-white font-medium h-12 px-8"
+                onClick={scrollToFeatures}
               >
                 Get Started <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-traffic-200 dark:border-gray-800 h-12 px-8"
-              >
-                View Dashboard
               </Button>
             </div>
           </div>

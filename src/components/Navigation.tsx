@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Menu, X, ChevronRight } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Navigation = () => {
@@ -26,7 +26,6 @@ const Navigation = () => {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Detection', path: '/detection' },
   ];
 
   return (
@@ -67,13 +66,6 @@ const Navigation = () => {
               {item.name}
             </Link>
           ))}
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="ml-4 bg-traffic-600 hover:bg-traffic-700 text-white"
-          >
-            Get Started <ChevronRight className="ml-1 h-4 w-4" />
-          </Button>
         </nav>
 
         {/* Mobile Menu Button */}
@@ -109,13 +101,6 @@ const Navigation = () => {
                   {item.name}
                 </Link>
               ))}
-              <Button 
-                variant="default" 
-                size="sm" 
-                className="bg-traffic-600 hover:bg-traffic-700 text-white mt-2"
-              >
-                Get Started <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
             </nav>
           </div>
         )}

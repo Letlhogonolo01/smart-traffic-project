@@ -3,6 +3,7 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   return (
@@ -54,12 +55,14 @@ const Dashboard = () => {
               ))}
             </div>
             
-            <Button 
-              className="animate-fade-in bg-traffic-600 hover:bg-traffic-700"
-              size="lg"
-            >
-              Explore Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Link to="/dashboard">
+              <Button 
+                className="animate-fade-in bg-traffic-600 hover:bg-traffic-700"
+                size="lg"
+              >
+                Explore Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
           
           <div className="flex-1 animate-fade-in">

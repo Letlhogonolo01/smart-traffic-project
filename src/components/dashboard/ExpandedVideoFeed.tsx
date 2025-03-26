@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -19,16 +18,16 @@ const mockDetections = [
   { id: 5, type: 'Pedestrian', confidence: 0.76, x: 180, y: 200, width: 30, height: 60 }
 ];
 
-// Mock camera feeds
-const cameraFeeds = [
-  { id: 'CAM-01', name: 'Main St & 5th Ave', location: 'Downtown', status: 'Active' },
-  { id: 'CAM-02', name: 'Highway 101 North', location: 'Highway', status: 'Active' },
-  { id: 'CAM-03', name: 'Central Business District', location: 'Downtown', status: 'Active' },
-  { id: 'CAM-04', name: 'West Industrial Area', location: 'Industrial', status: 'Offline' },
-  { id: 'CAM-05', name: 'Shopping Mall Entrance', location: 'Commercial', status: 'Active' },
-  { id: 'CAM-06', name: 'University Campus', location: 'Education', status: 'Active' },
-  { id: 'CAM-07', name: 'East Residential Area', location: 'Residential', status: 'Maintenance' },
-  { id: 'CAM-08', name: 'South Transit Hub', location: 'Transport', status: 'Active' },
+// Traffic camera feeds
+const videoSources = [
+  { id: 'CAM-01', src: "https://www.youtube.com/embed/lekdUXv82xQ?autoplay=1&mute=1&loop=1&controls=0", name: 'Main St & 5th Ave', location: 'Downtown', status: 'Active' },
+  { id: 'CAM-02', src: "https://www.youtube.com/embed/Avpce9ouYJQ?autoplay=1&mute=1&loop=1&controls=0", name: 'Highway 101 North', location: 'Highway', status: 'Active' },
+  { id: 'CAM-03', src: "https://www.youtube.com/embed/i0yqhHKWY0A?autoplay=1&mute=1&loop=1&controls=0", name: 'Central Business District', location: 'Downtown', status: 'Active' },
+  { id: 'CAM-04', src: "https://www.youtube.com/embed/N8_J4GPv4R0?autoplay=1&mute=1&loop=1&controls=0", name: 'West Industrial Area', location: 'Industrial', status: 'Active' },
+  { id: 'CAM-05', src: "https://www.youtube.com/embed/lekdUXv82xQ?autoplay=1&mute=1&loop=1&controls=0", name: 'Shopping Mall Entrance', location: 'Commercial', status: 'Active' },
+  { id: 'CAM-06', src: "https://www.youtube.com/embed/Avpce9ouYJQ?autoplay=1&mute=1&loop=1&controls=0", name: 'University Campus', location: 'Education', status: 'Active' },
+  { id: 'CAM-07', src: "https://www.youtube.com/embed/i0yqhHKWY0A?autoplay=1&mute=1&loop=1&controls=0", name: 'East Residential Area', location: 'Residential', status: 'Maintenance' },
+  { id: 'CAM-08', src: "https://www.youtube.com/embed/N8_J4GPv4R0?autoplay=1&mute=1&loop=1&controls=0", name: 'South Transit Hub', location: 'Transport', status: 'Active' },
 ];
 
 const ExpandedVideoFeed = () => {
@@ -75,6 +74,12 @@ const ExpandedVideoFeed = () => {
 
     return () => clearInterval(interval);
   }, [detecting]);
+
+  // Get current video source
+  const getCurrentVideoSource = () => {
+    const camera = videoSources.find(cam => cam.id === selectedCamera);
+    return camera ? camera.src : videoSources[0].src;
+  };
   
   return (
     <div className="grid grid-cols-1 gap-6">
@@ -124,7 +129,7 @@ const ExpandedVideoFeed = () => {
                     <iframe
                       width="100%"
                       height="500"
-                      src={`https://www.youtube.com/embed/lekdUXv82xQ?autoplay=1&mute=1&loop=1&controls=0`}
+                      src={getCurrentVideoSource()}
                       title="Live Traffic Camera Feed"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
@@ -135,7 +140,7 @@ const ExpandedVideoFeed = () => {
                     <div className="absolute top-4 left-4 text-white bg-black/50 px-3 py-1.5 rounded text-sm backdrop-blur-sm">
                       <div className="flex items-center">
                         <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-                        <span>LIVE: {cameraFeeds.find(cam => cam.id === selectedCamera)?.name}</span>
+                        <span>LIVE: {videoSources.find(cam => cam.id === selectedCamera)?.name}</span>
                       </div>
                     </div>
                     
@@ -255,7 +260,7 @@ const ExpandedVideoFeed = () => {
                 </div>
               ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 gap-4">
-                  {cameraFeeds.slice(0, 4).map((camera) => (
+                  {videoSources.slice(0, 4).map((camera) => (
                     <div 
                       key={camera.id}
                       className={`relative rounded-lg overflow-hidden cursor-pointer ${
@@ -267,7 +272,7 @@ const ExpandedVideoFeed = () => {
                         <iframe
                           width="100%"
                           height="180"
-                          src="https://www.youtube.com/embed/lekdUXv82xQ?autoplay=0&mute=1&loop=1&controls=0"
+                          src={camera.src.replace('autoplay=1', 'autoplay=0')}
                           title={`Live Feed from ${camera.name}`}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           className="w-full"
@@ -306,7 +311,7 @@ const ExpandedVideoFeed = () => {
                     <Map className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
                     <p className="text-muted-foreground">Interactive camera map would be displayed here</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Showing all {cameraFeeds.length} camera locations
+                      Showing all {videoSources.length} camera locations
                     </p>
                   </div>
                 </div>
@@ -331,7 +336,7 @@ const ExpandedVideoFeed = () => {
                     </div>
                     
                     <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                      {cameraFeeds.map((camera) => (
+                      {videoSources.map((camera) => (
                         <div
                           key={camera.id}
                           className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${
