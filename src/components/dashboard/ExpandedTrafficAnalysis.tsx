@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   TrendingUp, TrendingDown, Calendar, RefreshCw, Download, 
-  Filter, Car, User, ThumbsUp, ThumbsDown 
+  Filter, Car, User, ThumbsUp, ThumbsDown, MapPin 
 } from 'lucide-react';
 
 // Vehicle type data
