@@ -2,13 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { useTheme } from 'next-themes';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +30,10 @@ const Navigation = () => {
     { name: 'Home', path: '/' },
     { name: 'Dashboard', path: '/dashboard' },
   ];
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <header 
@@ -52,6 +59,15 @@ const Navigation = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-1">
+          <div className="flex items-center mr-4 space-x-2">
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Switch 
+              checked={theme === 'dark'} 
+              onCheckedChange={toggleTheme} 
+              aria-label="Toggle dark mode"
+            />
+            <Moon className="h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          </div>
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -86,6 +102,18 @@ const Navigation = () => {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 p-4 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 animate-fade-in">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">Dark Mode</span>
+              <div className="flex items-center space-x-2">
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Switch 
+                  checked={theme === 'dark'} 
+                  onCheckedChange={toggleTheme} 
+                  aria-label="Toggle dark mode"
+                />
+                <Moon className="h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </div>
+            </div>
             <nav className="flex flex-col space-y-3">
               {navItems.map((item) => (
                 <Link

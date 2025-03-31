@@ -1,14 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
   Play, Pause, Volume2, VolumeX, 
   ZoomIn, ZoomOut, Maximize2, Minimize2,
-  Download, RefreshCw, Grid, Map, Filter,
+  Download, RefreshCw, Grid,
   Car, Truck, Bus, User
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import TrafficRoutingMap from './TrafficRoutingMap';
 import EnhancedAnalytics from './EnhancedAnalytics';
 
 // Mock detection data
@@ -86,7 +86,6 @@ const ExpandedVideoFeed = () => {
           <TabsList>
             <TabsTrigger value="live">Live Feed</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="map">Map View</TabsTrigger>
           </TabsList>
           
           <div className="flex flex-wrap gap-2">
@@ -105,14 +104,6 @@ const ExpandedVideoFeed = () => {
             >
               <Grid className="h-4 w-4 mr-1" />
               Grid View
-            </Button>
-            <Button 
-              variant={viewMode === 'map' ? 'default' : 'outline'} 
-              size="sm"
-              onClick={() => setViewMode('map')}
-            >
-              <Map className="h-4 w-4 mr-1" />
-              Map View
             </Button>
           </div>
         </div>
@@ -251,7 +242,7 @@ const ExpandedVideoFeed = () => {
                     </div>
                   </div>
                 </div>
-              ) : viewMode === 'grid' ? (
+              ) : (
                 <div className="grid grid-cols-2 gap-4">
                   {videoSources.slice(0, 4).map((camera) => (
                     <div 
@@ -265,7 +256,7 @@ const ExpandedVideoFeed = () => {
                         <iframe
                           width="100%"
                           height="180"
-                          src={camera.src.replace('autoplay=1', 'autoplay=0')}
+                          src={camera.src}
                           title={`Live Feed from ${camera.name}`}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           className="w-full"
@@ -298,16 +289,6 @@ const ExpandedVideoFeed = () => {
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="bg-gray-100 dark:bg-gray-800 h-[500px] rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <Map className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">Interactive camera map would be displayed here</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Showing all {videoSources.length} camera locations
-                    </p>
-                  </div>
-                </div>
               )}
             </div>
             
@@ -320,9 +301,6 @@ const ExpandedVideoFeed = () => {
                   
                   <div className="p-3">
                     <div className="mb-2 flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                        <Filter className="h-4 w-4" />
-                      </Button>
                       <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                         <RefreshCw className="h-4 w-4" />
                       </Button>
@@ -365,39 +343,6 @@ const ExpandedVideoFeed = () => {
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
             <h3 className="text-lg font-medium mb-6">Video Feed Analytics</h3>
             <EnhancedAnalytics analyticsType="traffic" height="450px" />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="map">
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-            <h3 className="text-lg font-medium mb-6">Camera Locations & Traffic Conditions</h3>
-            <TrafficRoutingMap mapType="traffic" height="500px" />
-            
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-              {videoSources.slice(0, 4).map((camera) => (
-                <div 
-                  key={camera.id}
-                  className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div 
-                      className={`h-2 w-2 rounded-full ${
-                        camera.status === 'Active' ? 'bg-green-500' : 'bg-amber-500'
-                      }`}
-                    ></div>
-                    <h4 className="text-sm font-medium truncate">{camera.name}</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground">{camera.location}</p>
-                  <div className="mt-1.5 flex items-center justify-between text-xs">
-                    <span className="text-green-600 dark:text-green-400 flex items-center">
-                      <Car className="h-3 w-3 mr-1" />
-                      High traffic
-                    </span>
-                    <Badge className="text-[10px] h-5">Monitored</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </TabsContent>
       </Tabs>

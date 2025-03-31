@@ -1,10 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Video, Play, Pause, Maximize2, ChevronLeft, ChevronRight, MapPin, BarChart2, Camera } from 'lucide-react';
+import { Video, Play, Pause, Maximize2, ChevronLeft, ChevronRight, BarChart2, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ResponsiveContainer, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 
 // Mock detection data
 const mockDetections = [
@@ -28,14 +28,6 @@ const cameraLocations = [
   "Highway Traffic Flow",
   "City Center",
   "Urban Arterial Road"
-];
-
-// Camera map coordinates
-const cameraCoordinates = [
-  { id: 1, name: "Downtown Intersection", lat: 40.712, lng: -74.006 },
-  { id: 2, name: "Highway Traffic Flow", lat: 40.718, lng: -74.015 },
-  { id: 3, name: "City Center", lat: 40.707, lng: -74.010 },
-  { id: 4, name: "Urban Arterial Road", lat: 40.715, lng: -73.995 }
 ];
 
 // Analytics mock data
@@ -66,6 +58,7 @@ const LiveTrafficFeed = ({ onExpand }: { onExpand?: () => void }) => {
   const [detections, setDetections] = useState<typeof mockDetections>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('video');
+  const [viewMode, setViewMode] = useState('single');
 
   // Toggle play/pause
   const togglePlay = () => {
@@ -128,156 +121,144 @@ const LiveTrafficFeed = ({ onExpand }: { onExpand?: () => void }) => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-2">
           <TabsList>
             <TabsTrigger value="video">Live Feed</TabsTrigger>
-            <TabsTrigger value="map">Map View</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
         </Tabs>
 
         <TabsContent value="video" className="m-0">
-          <div className="relative">
-            {/* YouTube embedded video */}
-            <iframe
-              ref={videoRef}
-              width="100%"
-              height="240"
-              src={videoSources[currentVideoIndex]}
-              title="Live Traffic Camera Feed"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="rounded-lg"
-            ></iframe>
+          {viewMode === 'single' ? (
+            <div className="relative">
+              {/* YouTube embedded video */}
+              <iframe
+                ref={videoRef}
+                width="100%"
+                height="240"
+                src={videoSources[currentVideoIndex]}
+                title="Live Traffic Camera Feed"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-lg"
+              ></iframe>
 
-            {/* Camera selection overlay */}
-            <div className="absolute top-1/2 left-0 transform -translate-y-1/2 flex items-center justify-center">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="h-8 w-8 p-0 bg-black/60 hover:bg-black/80 text-white rounded-full"
-                onClick={() => changeCamera('prev')}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="absolute top-1/2 right-0 transform -translate-y-1/2 flex items-center justify-center">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="h-8 w-8 p-0 bg-black/60 hover:bg-black/80 text-white rounded-full"
-                onClick={() => changeCamera('next')}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Detections overlay */}
-            {detecting && (
-              <div className="absolute inset-0 pointer-events-none">
-                {detections.map(detection => (
-                  <div 
-                    key={detection.id}
-                    className="absolute border-2 border-red-500 flex items-start justify-between"
-                    style={{
-                      left: `${detection.x}px`,
-                      top: `${detection.y}px`,
-                      width: `${detection.width}px`,
-                      height: `${detection.height}px`
-                    }}
-                  >
-                    <div className="text-[10px] bg-red-500 text-white px-1 leading-tight mt-[-18px]">
-                      {detection.type} {(detection.confidence * 100).toFixed(0)}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-black/60 hover:bg-black/80 text-white"
-                onClick={togglePlay}
-              >
-                {playing ? <Pause className="h-4 w-4 mr-1" /> : <Play className="h-4 w-4 mr-1" />}
-                {playing ? "Pause" : "Play"}
-              </Button>
-              
-              <Button
-                variant={detecting ? "default" : "secondary"}
-                size="sm"
-                className={detecting ? "bg-red-500 hover:bg-red-600 text-white" : "bg-black/60 hover:bg-black/80 text-white"}
-                onClick={toggleDetection}
-              >
-                {detecting ? "Detecting" : "Detect Objects"}
-              </Button>
-            </div>
-          </div>
-          
-          <div className="mt-3 text-xs text-muted-foreground flex justify-between">
-            <span>Live feed with real-time object detection technology</span>
-            <span>Camera {currentVideoIndex + 1}/{videoSources.length}</span>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="map" className="m-0">
-          <div className="rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden" style={{ height: '240px' }}>
-            <div className="h-full bg-gray-100 dark:bg-gray-800 p-4 relative">
-              {/* Mock map background */}
-              <div className="absolute inset-0 bg-[#e9edf3] dark:bg-gray-900 overflow-hidden">
-                <svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
-                  {/* Mock roads */}
-                  <path d="M0,300 L800,300" stroke="#999" strokeWidth="10" fill="none" />
-                  <path d="M0,150 L800,150" stroke="#999" strokeWidth="6" fill="none" />
-                  <path d="M0,450 L800,450" stroke="#999" strokeWidth="6" fill="none" />
-                  <path d="M400,0 L400,600" stroke="#999" strokeWidth="10" fill="none" />
-                  <path d="M200,0 L200,600" stroke="#999" strokeWidth="6" fill="none" />
-                  <path d="M600,0 L600,600" stroke="#999" strokeWidth="6" fill="none" />
-                </svg>
-              </div>
-
-              {/* Camera pins */}
-              {cameraCoordinates.map((camera, index) => (
-                <div 
-                  key={camera.id}
-                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center ${index === currentVideoIndex ? 'z-20' : 'z-10'}`}
-                  style={{
-                    left: `${(camera.lng + 74.02) * 8000}%`, 
-                    top: `${(40.72 - camera.lat) * 8000}%`
-                  }}
+              {/* Camera selection overlay */}
+              <div className="absolute top-1/2 left-0 transform -translate-y-1/2 flex items-center justify-center">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 w-8 p-0 bg-black/60 hover:bg-black/80 text-white rounded-full"
+                  onClick={() => changeCamera('prev')}
                 >
-                  <div 
-                    className={`flex items-center justify-center w-10 h-10 rounded-full 
-                    ${index === currentVideoIndex 
-                      ? 'bg-red-500 text-white shadow-lg animate-pulse' 
-                      : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}
-                    onClick={() => setCurrentVideoIndex(index)}
-                  >
-                    <Camera className="h-5 w-5" />
-                  </div>
-                  {index === currentVideoIndex && (
-                    <div className="mt-1 px-2 py-1 bg-white dark:bg-gray-800 rounded text-xs font-medium shadow-md">
-                      {camera.name}
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="absolute top-1/2 right-0 transform -translate-y-1/2 flex items-center justify-center">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 w-8 p-0 bg-black/60 hover:bg-black/80 text-white rounded-full"
+                  onClick={() => changeCamera('next')}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Detections overlay */}
+              {detecting && (
+                <div className="absolute inset-0 pointer-events-none">
+                  {detections.map(detection => (
+                    <div 
+                      key={detection.id}
+                      className="absolute border-2 border-red-500 flex items-start justify-between"
+                      style={{
+                        left: `${detection.x}px`,
+                        top: `${detection.y}px`,
+                        width: `${detection.width}px`,
+                        height: `${detection.height}px`
+                      }}
+                    >
+                      <div className="text-[10px] bg-red-500 text-white px-1 leading-tight mt-[-18px]">
+                        {detection.type} {(detection.confidence * 100).toFixed(0)}%
+                      </div>
                     </div>
-                  )}
+                  ))}
+                </div>
+              )}
+
+              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-black/60 hover:bg-black/80 text-white"
+                  onClick={togglePlay}
+                >
+                  {playing ? <Pause className="h-4 w-4 mr-1" /> : <Play className="h-4 w-4 mr-1" />}
+                  {playing ? "Pause" : "Play"}
+                </Button>
+                
+                <Button
+                  variant={detecting ? "default" : "secondary"}
+                  size="sm"
+                  className={detecting ? "bg-red-500 hover:bg-red-600 text-white" : "bg-black/60 hover:bg-black/80 text-white"}
+                  onClick={toggleDetection}
+                >
+                  {detecting ? "Detecting" : "Detect Objects"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {videoSources.slice(0, 4).map((src, idx) => (
+                <div 
+                  key={idx}
+                  className={`relative rounded-lg overflow-hidden cursor-pointer ${
+                    currentVideoIndex === idx ? 'ring-2 ring-blue-500' : ''
+                  }`}
+                  onClick={() => setCurrentVideoIndex(idx)}
+                >
+                  <iframe
+                    width="100%"
+                    height="160"
+                    src={src}
+                    title={`Live Feed from ${cameraLocations[idx]}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                  
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{cameraLocations[idx]}</span>
+                      <div className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1"></div>
+                        <span className="text-xs">Live</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
-
-              {/* Legend */}
-              <div className="absolute bottom-2 left-2 bg-white dark:bg-gray-800 rounded-md shadow-md p-2 text-xs">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
-                  <span>Active Camera</span>
-                </div>
-                <div className="flex items-center mt-1">
-                  <div className="w-3 h-3 rounded-full bg-gray-200 dark:bg-gray-700 mr-1"></div>
-                  <span>Other Cameras</span>
-                </div>
-              </div>
             </div>
-          </div>
-          <div className="mt-3 text-xs text-muted-foreground">
-            <span>Interactive camera map with {cameraCoordinates.length} monitoring points</span>
+          )}
+          
+          <div className="mt-3 flex justify-between">
+            <span className="text-xs text-muted-foreground">Live feed with real-time object detection technology</span>
+            <div className="flex space-x-2">
+              <Button 
+                variant={viewMode === 'single' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => setViewMode('single')}
+                className="h-8"
+              >
+                Single View
+              </Button>
+              <Button 
+                variant={viewMode === 'grid' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="h-8"
+              >
+                Grid View
+              </Button>
+            </div>
           </div>
         </TabsContent>
 
