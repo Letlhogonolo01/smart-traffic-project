@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import EnhancedAnalytics from './dashboard/EnhancedAnalytics';
 
 const Dashboard = () => {
   return (
@@ -63,6 +64,15 @@ const Dashboard = () => {
                 Explore Dashboard <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
+          </div>
+          
+          <div className="flex-1">
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg bg-card p-6 overflow-hidden animate-fade-in">
+              <h3 className="text-xl font-bold mb-4">Live Traffic Insights</h3>
+              <div className="h-64">
+                <EnhancedAnalytics analyticsType="traffic" height="100%" />
+              </div>
+            </div>
           </div>
         </div>
       </div>

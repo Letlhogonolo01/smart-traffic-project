@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Car, MapPin, Calendar, Clock, Phone, User, Building, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import TrafficRoutingMap from './TrafficRoutingMap';
+import EnhancedAnalytics from './EnhancedAnalytics';
 
-// Mock detailed incident data
 const incidents = [
   {
     id: 1,
@@ -377,89 +377,71 @@ const ExpandedIncidentReport = () => {
           </div>
         </TabsContent>
         
-        <TabsContent value="map" className="h-[700px]">
-          <div className="bg-gray-100 dark:bg-gray-800 h-full rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">Interactive incident map would be displayed here</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Showing all {incidents.length} active incidents
-              </p>
+        <TabsContent value="map">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <h3 className="text-lg font-medium mb-6">Incident Map Overview</h3>
+            <TrafficRoutingMap mapType="incidents" height="500px" />
+            
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800/50 rounded-lg">
+                <h4 className="font-medium flex items-center mb-2">
+                  <AlertTriangle className="h-4 w-4 mr-1.5 text-red-600" />
+                  Real-time Incident Alerts
+                </h4>
+                <div className="space-y-2">
+                  {incidents.slice(0, 3).map((incident, i) => (
+                    <div key={i} className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded">
+                      <div className="flex items-center">
+                        <div 
+                          className={`h-2 w-2 rounded-full mr-2 ${
+                            incident.severity === 'High' 
+                              ? 'bg-red-500' 
+                              : incident.severity === 'Medium' 
+                              ? 'bg-amber-500' 
+                              : 'bg-blue-500'
+                          }`} 
+                        ></div>
+                        <span className="text-sm">{incident.type}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(incident.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/50 rounded-lg">
+                <h4 className="font-medium flex items-center mb-2">
+                  <MapPin className="h-4 w-4 mr-1.5 text-amber-600" />
+                  Hotspot Analysis
+                </h4>
+                <p className="text-sm mb-2 text-muted-foreground">
+                  Areas with highest incident frequencies in the past 24 hours
+                </p>
+                <div className="space-y-1.5">
+                  {[
+                    { name: 'Main St & 5th Ave', count: 3 },
+                    { name: 'Highway 101 North', count: 2 },
+                    { name: 'Downtown Area', count: 2 }
+                  ].map((hotspot, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-sm">{hotspot.name}</span>
+                      <Badge variant={i === 0 ? 'destructive' : 'default'}>
+                        {hotspot.count} incidents
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </TabsContent>
         
         <TabsContent value="analytics">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-medium mb-4">Incident Trend Analysis</h3>
-                <div className="h-[300px] bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                  <p className="text-muted-foreground">
-                    Incident trend charts would be displayed here
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-medium mb-4">Incident Statistics</h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Incidents by Type
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                        <p className="text-xs text-red-800 dark:text-red-300">Accidents</p>
-                        <p className="text-lg font-medium text-red-700 dark:text-red-400">2</p>
-                      </div>
-                      <div className="bg-amber-50 dark:bg-amber-900/20 p-2 rounded">
-                        <p className="text-xs text-amber-800 dark:text-amber-300">Traffic Jams</p>
-                        <p className="text-lg font-medium text-amber-700 dark:text-amber-400">1</p>
-                      </div>
-                      <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                        <p className="text-xs text-blue-800 dark:text-blue-300">Road Work</p>
-                        <p className="text-lg font-medium text-blue-700 dark:text-blue-400">1</p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded">
-                        <p className="text-xs text-gray-800 dark:text-gray-300">Other</p>
-                        <p className="text-lg font-medium text-gray-700 dark:text-gray-400">0</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Severity Distribution
-                    </p>
-                    <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div className="flex h-full">
-                        <div className="bg-red-500 h-full" style={{ width: '25%' }}></div>
-                        <div className="bg-amber-500 h-full" style={{ width: '50%' }}></div>
-                        <div className="bg-green-500 h-full" style={{ width: '25%' }}></div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                      <span>High: 1</span>
-                      <span>Medium: 2</span>
-                      <span>Low: 1</span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Response Time (Avg)
-                    </p>
-                    <p className="text-2xl font-bold">3:42</p>
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      12% faster than last month
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <h3 className="text-lg font-medium mb-6">Incident Analytics Dashboard</h3>
+            <EnhancedAnalytics analyticsType="incidents" height="450px" />
           </div>
         </TabsContent>
       </Tabs>

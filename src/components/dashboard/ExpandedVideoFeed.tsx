@@ -8,6 +8,8 @@ import {
   Car, Truck, Bus, User
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import TrafficRoutingMap from './TrafficRoutingMap';
+import EnhancedAnalytics from './EnhancedAnalytics';
 
 // Mock detection data
 const mockDetections = [
@@ -44,7 +46,6 @@ const ExpandedVideoFeed = () => {
   });
   const [viewMode, setViewMode] = useState('single');
   
-  // Simulation of detections updating over time
   useEffect(() => {
     if (!detecting) {
       setDetections([]);
@@ -52,7 +53,6 @@ const ExpandedVideoFeed = () => {
     }
 
     const interval = setInterval(() => {
-      // Update detection positions slightly to simulate movement
       setDetections(prevDetections => 
         prevDetections.map(detection => ({
           ...detection,
@@ -61,7 +61,6 @@ const ExpandedVideoFeed = () => {
         }))
       );
       
-      // Occasionally update object counts to simulate detection changes
       if (Math.random() > 0.7) {
         setObjectCounts(prev => ({
           cars: prev.cars + Math.floor(Math.random() * 3) - 1,
@@ -75,12 +74,11 @@ const ExpandedVideoFeed = () => {
     return () => clearInterval(interval);
   }, [detecting]);
 
-  // Get current video source
   const getCurrentVideoSource = () => {
     const camera = videoSources.find(cam => cam.id === selectedCamera);
     return camera ? camera.src : videoSources[0].src;
   };
-  
+
   return (
     <div className="grid grid-cols-1 gap-6">
       <Tabs defaultValue="live" className="w-full">
@@ -88,7 +86,7 @@ const ExpandedVideoFeed = () => {
           <TabsList>
             <TabsTrigger value="live">Live Feed</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="archive">Archive</TabsTrigger>
+            <TabsTrigger value="map">Map View</TabsTrigger>
           </TabsList>
           
           <div className="flex flex-wrap gap-2">
@@ -125,7 +123,6 @@ const ExpandedVideoFeed = () => {
               {viewMode === 'single' ? (
                 <div className="bg-black rounded-lg overflow-hidden">
                   <div className="relative">
-                    {/* YouTube embedded video */}
                     <iframe
                       width="100%"
                       height="500"
@@ -136,7 +133,6 @@ const ExpandedVideoFeed = () => {
                       className="w-full"
                     ></iframe>
 
-                    {/* Camera info overlay */}
                     <div className="absolute top-4 left-4 text-white bg-black/50 px-3 py-1.5 rounded text-sm backdrop-blur-sm">
                       <div className="flex items-center">
                         <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
@@ -144,12 +140,10 @@ const ExpandedVideoFeed = () => {
                       </div>
                     </div>
                     
-                    {/* Time and detection status */}
                     <div className="absolute top-4 right-4 text-white bg-black/50 px-3 py-1.5 rounded text-sm font-mono backdrop-blur-sm">
                       {new Date().toLocaleTimeString()} | {detecting ? 'Detection Active' : 'Detection Off'}
                     </div>
 
-                    {/* Detections overlay */}
                     {detecting && (
                       <div className="absolute inset-0 pointer-events-none">
                         {detections.map(detection => (
@@ -171,7 +165,6 @@ const ExpandedVideoFeed = () => {
                       </div>
                     )}
                     
-                    {/* Video controls */}
                     <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Button
@@ -371,29 +364,39 @@ const ExpandedVideoFeed = () => {
         <TabsContent value="analytics">
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
             <h3 className="text-lg font-medium mb-6">Video Feed Analytics</h3>
-            <div className="h-[400px] bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <RefreshCw className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Video analytics dashboard would be displayed here</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Including object detection trends, traffic flow analysis, and incident detection
-                </p>
-              </div>
-            </div>
+            <EnhancedAnalytics analyticsType="traffic" height="450px" />
           </div>
         </TabsContent>
         
-        <TabsContent value="archive">
+        <TabsContent value="map">
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-            <h3 className="text-lg font-medium mb-6">Video Archive</h3>
-            <div className="h-[400px] bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <RefreshCw className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Video archive interface would be displayed here</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Browse and search historical footage from all cameras
-                </p>
-              </div>
+            <h3 className="text-lg font-medium mb-6">Camera Locations & Traffic Conditions</h3>
+            <TrafficRoutingMap mapType="traffic" height="500px" />
+            
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+              {videoSources.slice(0, 4).map((camera) => (
+                <div 
+                  key={camera.id}
+                  className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <div 
+                      className={`h-2 w-2 rounded-full ${
+                        camera.status === 'Active' ? 'bg-green-500' : 'bg-amber-500'
+                      }`}
+                    ></div>
+                    <h4 className="text-sm font-medium truncate">{camera.name}</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{camera.location}</p>
+                  <div className="mt-1.5 flex items-center justify-between text-xs">
+                    <span className="text-green-600 dark:text-green-400 flex items-center">
+                      <Car className="h-3 w-3 mr-1" />
+                      High traffic
+                    </span>
+                    <Badge className="text-[10px] h-5">Monitored</Badge>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </TabsContent>

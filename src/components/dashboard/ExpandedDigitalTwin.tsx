@@ -1,9 +1,9 @@
-
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Map } from 'lucide-react';
+import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const ExpandedDigitalTwin = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -12,6 +12,9 @@ const ExpandedDigitalTwin = () => {
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const carModelsRef = useRef<THREE.Mesh[]>([]);
   const frameIdRef = useRef<number>(0);
+  const [activeView, setActiveView] = useState<string>('3d');
+  const congestionOverlayRef = useRef<THREE.Group | null>(null);
+  const trafficLightsRef = useRef<any[]>([]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -69,12 +72,10 @@ const ExpandedDigitalTwin = () => {
       const road = new THREE.Mesh(roadGeometry, roadMaterial);
       road.rotation.x = -Math.PI / 2;
       road.rotation.z = rotation;
-      road.position.set(x, 0.01, z); // Slightly above ground to avoid z-fighting
+      road.position.set(x, 0.01, z);
       scene.add(road);
       
-      // Add road markings
       if (rotation === 0) {
-        // Vertical road
         for (let i = -length/2 + 2; i < length/2; i += 5) {
           const markingGeometry = new THREE.PlaneGeometry(0.5, 2);
           const markingMaterial = new THREE.MeshStandardMaterial({ 
@@ -87,7 +88,6 @@ const ExpandedDigitalTwin = () => {
           scene.add(marking);
         }
       } else {
-        // Horizontal road
         for (let i = -length/2 + 2; i < length/2; i += 5) {
           const markingGeometry = new THREE.PlaneGeometry(2, 0.5);
           const markingMaterial = new THREE.MeshStandardMaterial({ 
@@ -102,12 +102,11 @@ const ExpandedDigitalTwin = () => {
       }
     };
     
-    // Create road network
-    createRoad(12, 200, 0, 0); // Main vertical road
-    createRoad(200, 12, 0, -30, Math.PI / 2); // Main horizontal road
-    createRoad(200, 12, 0, 30, Math.PI / 2); // Second horizontal road
-    createRoad(12, 200, -40, 0); // Second vertical road
-    createRoad(12, 200, 40, 0); // Third vertical road
+    createRoad(12, 200, 0, 0);
+    createRoad(200, 12, 0, -30, Math.PI / 2);
+    createRoad(200, 12, 0, 30, Math.PI / 2);
+    createRoad(12, 200, -40, 0);
+    createRoad(12, 200, 40, 0);
 
     // Create buildings
     const createBuilding = (x: number, z: number, width: number, depth: number, height: number, color: number) => {
@@ -120,7 +119,6 @@ const ExpandedDigitalTwin = () => {
       scene.add(building);
     };
     
-    // Add buildings around the roads
     createBuilding(-25, -15, 20, 20, 15, 0x8899aa);
     createBuilding(-60, -40, 30, 25, 20, 0x99aabb);
     createBuilding(-20, -60, 25, 30, 25, 0xaabbcc);
@@ -134,7 +132,6 @@ const ExpandedDigitalTwin = () => {
     createBuilding(60, 40, 30, 25, 20, 0x7788aa);
     createBuilding(20, 60, 25, 30, 15, 0x99aacc);
 
-    // Create car models (simple cubes for now)
     const createCar = (x: number, z: number, color: number, rotation = 0) => {
       const carGeometry = new THREE.BoxGeometry(2, 1, 4);
       const carMaterial = new THREE.MeshStandardMaterial({ color });
@@ -147,7 +144,6 @@ const ExpandedDigitalTwin = () => {
       return car;
     };
 
-    // Create some initial cars
     const cars = [
       createCar(0, 20, 0xff0000),
       createCar(0, 10, 0x0000ff),
@@ -173,9 +169,7 @@ const ExpandedDigitalTwin = () => {
     ];
     carModelsRef.current = cars;
 
-    // Add traffic lights
     const createTrafficLight = (x: number, z: number) => {
-      // Pole
       const poleGeometry = new THREE.CylinderGeometry(0.3, 0.3, 7, 8);
       const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
       const pole = new THREE.Mesh(poleGeometry, poleMaterial);
@@ -183,7 +177,6 @@ const ExpandedDigitalTwin = () => {
       pole.castShadow = true;
       scene.add(pole);
       
-      // Light housing
       const housingGeometry = new THREE.BoxGeometry(1, 3, 1);
       const housingMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
       const housing = new THREE.Mesh(housingGeometry, housingMaterial);
@@ -191,7 +184,6 @@ const ExpandedDigitalTwin = () => {
       housing.castShadow = true;
       scene.add(housing);
       
-      // Lights
       const redLightGeometry = new THREE.SphereGeometry(0.3, 16, 16);
       const redLightMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 });
       const redLight = new THREE.Mesh(redLightGeometry, redLightMaterial);
@@ -213,7 +205,6 @@ const ExpandedDigitalTwin = () => {
       return { redLight, yellowLight, greenLight };
     };
     
-    // Add traffic lights at intersections
     const trafficLights = [
       createTrafficLight(6, -30),
       createTrafficLight(-6, -30),
@@ -224,20 +215,132 @@ const ExpandedDigitalTwin = () => {
       createTrafficLight(40, 6),
       createTrafficLight(40, -6),
     ];
+
+    const congestionGroup = new THREE.Group();
+    congestionGroup.visible = false;
+    scene.add(congestionGroup);
+    congestionOverlayRef.current = congestionGroup;
+
+    const createCongestionHeatmap = () => {
+      const congestionPoints = [
+        { x: 0, z: -30, intensity: 0.9 },
+        { x: 0, z: -15, intensity: 0.7 },
+        { x: 20, z: -30, intensity: 0.6 },
+        { x: -20, z: -30, intensity: 0.8 },
+        { x: 0, z: -45, intensity: 0.5 },
+        { x: 0, z: 30, intensity: 0.4 },
+        { x: 40, z: 0, intensity: 0.75 },
+        { x: -40, z: -15, intensity: 0.65 }
+      ];
+      
+      congestionPoints.forEach(point => {
+        const color = new THREE.Color();
+        color.setHSL((1 - point.intensity) * 0.3, 1, 0.5);
+        
+        const radius = point.intensity * 12 + 5;
+        const segments = 32;
+        const heatmapGeometry = new THREE.CircleGeometry(radius, segments);
+        const heatmapMaterial = new THREE.MeshBasicMaterial({
+          color: color,
+          transparent: true,
+          opacity: 0.6,
+          side: THREE.DoubleSide
+        });
+        
+        const heatmap = new THREE.Mesh(heatmapGeometry, heatmapMaterial);
+        heatmap.rotation.x = -Math.PI / 2;
+        heatmap.position.set(point.x, 0.1, point.z);
+        congestionGroup.add(heatmap);
+        
+        if (point.intensity > 0.7) {
+          const pulsingGeometry = new THREE.CircleGeometry(radius * 1.2, segments);
+          const pulsingMaterial = new THREE.MeshBasicMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide
+          });
+          
+          const pulsingCircle = new THREE.Mesh(pulsingGeometry, pulsingMaterial);
+          pulsingCircle.rotation.x = -Math.PI / 2;
+          pulsingCircle.position.set(point.x, 0.15, point.z);
+          pulsingCircle.userData = { 
+            initialScale: 1.0,
+            pulseFactor: 0.2,
+            pulseSpeed: 1.5 + Math.random() * 0.5
+          };
+          congestionGroup.add(pulsingCircle);
+          
+          if (!congestionGroup.userData.pulsingElements) {
+            congestionGroup.userData.pulsingElements = [];
+          }
+          congestionGroup.userData.pulsingElements.push(pulsingCircle);
+        }
+      });
+
+      const createReroutePath = (startX: number, startZ: number, endX: number, endZ: number) => {
+        const curvePoints = [];
+        
+        for (let t = 0; t <= 1; t += 0.05) {
+          const controlX = (startX + endX) / 2 + 15;
+          const controlZ = (startZ + endZ) / 2 - 10;
+          
+          const x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * controlX + t * t * endX;
+          const z = (1 - t) * (1 - t) * startZ + 2 * (1 - t) * t * controlZ + t * t * endZ;
+          
+          curvePoints.push(new THREE.Vector3(x, 0.2, z));
+        }
+        
+        const curve = new THREE.CatmullRomCurve3(curvePoints);
+        const points = curve.getPoints(50);
+        const routeGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        
+        const routeMaterial = new THREE.LineBasicMaterial({ 
+          color: 0x22cc22, 
+          linewidth: 3,
+          linecap: 'round',
+          linejoin: 'round'
+        });
+        
+        const routeLine = new THREE.Line(routeGeometry, routeMaterial);
+        congestionGroup.add(routeLine);
+        
+        const arrowGeometry = new THREE.ConeGeometry(1, 3, 8);
+        const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x22cc22 });
+        const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+        
+        const lastPoint = points[points.length - 1];
+        const secondLastPoint = points[points.length - 2];
+        arrow.position.set(lastPoint.x, 0.5, lastPoint.z);
+        
+        const direction = new THREE.Vector3().subVectors(
+          lastPoint, 
+          secondLastPoint
+        ).normalize();
+        
+        const angle = Math.atan2(direction.x, direction.z);
+        arrow.rotation.y = -angle;
+        arrow.rotation.x = Math.PI / 2;
+        
+        congestionGroup.add(arrow);
+      };
+      
+      createReroutePath(0, -30, 40, 0);
+      createReroutePath(-40, -15, 0, 30);
+    };
     
-    // Animation loop with traffic light cycles
+    createCongestionHeatmap();
+
     let phase = 0;
     const phaseLength = 100;
     
     const animate = () => {
       frameIdRef.current = requestAnimationFrame(animate);
       
-      // Traffic light cycle
       phase = (phase + 1) % (phaseLength * 2);
       const northSouthGreen = phase < phaseLength;
       
       trafficLights.forEach((light, index) => {
-        // First 4 are east-west, second 4 are north-south
         const isNorthSouth = index >= 4;
         
         light.redLight.material.emissiveIntensity = 
@@ -245,35 +348,27 @@ const ExpandedDigitalTwin = () => {
         light.greenLight.material.emissiveIntensity = 
           (isNorthSouth === northSouthGreen) ? 0.8 : 0.1;
         
-        // Yellow light flash near phase change
-        const nearChange = (phase % phaseLength) > (phaseLength - 20);
-        light.yellowLight.material.emissiveIntensity = 
-          (isNorthSouth !== northSouthGreen && nearChange) ? 0.8 : 0.1;
+        if (phase % phaseLength > (phaseLength - 20)) {
+          light.yellowLight.material.emissiveIntensity = 
+            (isNorthSouth !== northSouthGreen) ? 0.8 : 0.1;
+        }
       });
 
-      // Move cars
       cars.forEach((car, i) => {
-        // Vertical roads
         if (i < 5 || (i >= 13 && i < 17) || (i >= 17 && i < 21)) {
           let speed = 0.2;
           let direction = 1;
           
-          // North-south roads
           if (i < 5) {
-            // Main vertical road
             speed = 0.25;
           } else if (i >= 13 && i < 17) {
-            // Left vertical road
             speed = 0.2;
-            direction = -1; // Moving down
+            direction = -1;
           } else {
-            // Right vertical road
             speed = 0.15;
           }
           
-          // Stop at red lights
           if (!northSouthGreen) {
-            // Check if near intersection
             const nearNorthIntersection = car.position.z > 25 && car.position.z < 35;
             const nearSouthIntersection = car.position.z < -25 && car.position.z > -35;
             
@@ -284,32 +379,24 @@ const ExpandedDigitalTwin = () => {
           
           car.position.z -= speed * direction;
           
-          // Reset position when off screen
           if (direction === 1 && car.position.z < -100) {
             car.position.z = 100;
           } else if (direction === -1 && car.position.z > 100) {
             car.position.z = -100;
           }
         } else if (i >= 5 && i < 13) {
-          // East-west roads
           let speed = 0.2;
           let direction = 1;
           
           if (i >= 5 && i < 9) {
-            // Bottom horizontal road
             speed = 0.18;
-            // First two cars move right, second two move left
             direction = i < 7 ? -1 : 1;
           } else {
-            // Top horizontal road
             speed = 0.22;
-            // First two cars move right, second two move left
             direction = i < 11 ? -1 : 1;
           }
           
-          // Stop at red lights
           if (northSouthGreen) {
-            // Check if near intersection
             const nearWestIntersection = car.position.x > -45 && car.position.x < -35;
             const nearMainIntersection = car.position.x > -5 && car.position.x < 5;
             const nearEastIntersection = car.position.x > 35 && car.position.x < 45;
@@ -321,7 +408,6 @@ const ExpandedDigitalTwin = () => {
           
           car.position.x += speed * direction;
           
-          // Reset position when off screen
           if (direction === 1 && car.position.x > 100) {
             car.position.x = -100;
           } else if (direction === -1 && car.position.x < -100) {
@@ -330,12 +416,24 @@ const ExpandedDigitalTwin = () => {
         }
       });
 
+      if (congestionOverlayRef.current?.visible && 
+          congestionOverlayRef.current.userData.pulsingElements) {
+        
+        const pulsingElements = congestionOverlayRef.current.userData.pulsingElements;
+        const now = Date.now() / 1000;
+        
+        pulsingElements.forEach((element: THREE.Mesh) => {
+          const { initialScale, pulseFactor, pulseSpeed } = element.userData;
+          const scale = initialScale + Math.sin(now * pulseSpeed) * pulseFactor;
+          element.scale.set(scale, scale, scale);
+        });
+      }
+
       renderer.render(scene, camera);
     };
 
     animate();
 
-    // Handle window resize
     const handleResize = () => {
       if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
       
@@ -360,27 +458,61 @@ const ExpandedDigitalTwin = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (congestionOverlayRef.current) {
+      congestionOverlayRef.current.visible = activeView === 'congestion';
+    }
+  }, [activeView]);
+
+  const handleZoomIn = () => {
+    if (cameraRef.current) {
+      const currentPosition = cameraRef.current.position.clone();
+      const direction = new THREE.Vector3(0, 0, 0).sub(currentPosition).normalize();
+      const newPosition = currentPosition.add(direction.multiplyScalar(10));
+      
+      cameraRef.current.position.copy(newPosition);
+      cameraRef.current.lookAt(0, 0, 0);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (cameraRef.current) {
+      const currentPosition = cameraRef.current.position.clone();
+      const direction = currentPosition.clone().normalize();
+      const newPosition = currentPosition.add(direction.multiplyScalar(10));
+      
+      cameraRef.current.position.copy(newPosition);
+      cameraRef.current.lookAt(0, 0, 0);
+    }
+  };
+
+  const handleResetView = () => {
+    if (cameraRef.current) {
+      cameraRef.current.position.set(0, 40, 70);
+      cameraRef.current.lookAt(0, 0, 0);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="flex justify-between">
-        <Tabs defaultValue="3d" className="w-[400px]">
+        <Tabs defaultValue="3d" value={activeView} onValueChange={setActiveView} className="w-[400px]">
           <TabsList>
             <TabsTrigger value="3d">3D View</TabsTrigger>
-            <TabsTrigger value="map">Map View</TabsTrigger>
             <TabsTrigger value="congestion">Congestion</TabsTrigger>
           </TabsList>
         </Tabs>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleZoomIn}>
             <ZoomIn className="h-4 w-4 mr-1" />
             Zoom In
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleZoomOut}>
             <ZoomOut className="h-4 w-4 mr-1" />
             Zoom Out
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleResetView}>
             <RotateCcw className="h-4 w-4 mr-1" />
             Reset View
           </Button>
@@ -413,12 +545,23 @@ const ExpandedDigitalTwin = () => {
         </div>
       </div>
       
-      <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg flex items-center">
-        <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
-        <span className="text-red-700 dark:text-red-400">
-          Traffic congestion detected at Main Street & 5th Avenue. Rerouting recommendations activated.
-        </span>
-      </div>
+      {activeView === 'congestion' && (
+        <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg flex items-center">
+          <Navigation className="h-5 w-5 text-amber-500 mr-2" />
+          <span className="text-amber-700 dark:text-amber-400">
+            Alternative routes are highlighted in green. These routes can save up to 12 minutes during peak congestion periods.
+          </span>
+        </div>
+      )}
+      
+      {activeView === '3d' && (
+        <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg flex items-center">
+          <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+          <span className="text-red-700 dark:text-red-400">
+            Traffic congestion detected at Main Street & 5th Avenue. Rerouting recommendations activated.
+          </span>
+        </div>
+      )}
     </div>
   );
 };
