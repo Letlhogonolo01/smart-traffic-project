@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation, RotateCw, Rotate3d } from 'lucide-react';
+import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation, Rotate3d } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const ExpandedDigitalTwin = () => {
@@ -16,7 +16,7 @@ const ExpandedDigitalTwin = () => {
   const congestionOverlayRef = useRef<THREE.Group | null>(null);
   const trafficLightsRef = useRef<any[]>([]);
   const [isRotating, setIsRotating] = useState<boolean>(false);
-  const rotationSpeedRef = useRef<number>(0.005);
+  const rotationSpeedRef = useRef<number>(0.01);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -433,7 +433,6 @@ const ExpandedDigitalTwin = () => {
         });
       }
 
-      // Rotate the scene if rotation is enabled
       if (isRotating && sceneRef.current) {
         sceneRef.current.rotation.y += rotationSpeedRef.current;
       }
@@ -469,9 +468,9 @@ const ExpandedDigitalTwin = () => {
 
   useEffect(() => {
     if (isRotating) {
-      console.log("Started rotation");
+      console.log("Auto-rotation started: 360° view enabled");
     } else {
-      console.log("Stopped rotation");
+      console.log("Auto-rotation stopped");
     }
   }, [isRotating]);
 
@@ -514,17 +513,6 @@ const ExpandedDigitalTwin = () => {
 
   const toggleRotation = () => {
     setIsRotating(prevState => !prevState);
-    console.log("Toggle rotation:", !isRotating);
-  };
-
-  const increaseRotationSpeed = () => {
-    rotationSpeedRef.current = Math.min(0.02, rotationSpeedRef.current + 0.002);
-    console.log("Increased rotation speed:", rotationSpeedRef.current);
-  };
-
-  const decreaseRotationSpeed = () => {
-    rotationSpeedRef.current = Math.max(0.001, rotationSpeedRef.current - 0.002);
-    console.log("Decreased rotation speed:", rotationSpeedRef.current);
   };
 
   return (
@@ -553,20 +541,8 @@ const ExpandedDigitalTwin = () => {
             className={isRotating ? "bg-blue-500 text-white hover:bg-blue-600" : ""}
           >
             <Rotate3d className="h-4 w-4 mr-1" />
-            {isRotating ? "Stop Rotation" : "Rotate"}
+            {isRotating ? "Stop Auto-Rotate" : "Auto-Rotate 360°"}
           </Button>
-          {isRotating && (
-            <>
-              <Button variant="outline" size="sm" onClick={increaseRotationSpeed}>
-                <RotateCw className="h-4 w-4 mr-1" />
-                Speed +
-              </Button>
-              <Button variant="outline" size="sm" onClick={decreaseRotationSpeed}>
-                <RotateCcw className="h-4 w-4 mr-1" />
-                Speed -
-              </Button>
-            </>
-          )}
           <Button variant="outline" size="sm" onClick={handleResetView}>
             <RotateCcw className="h-4 w-4 mr-1" />
             Reset View
