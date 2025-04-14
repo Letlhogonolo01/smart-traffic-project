@@ -36,6 +36,10 @@ const Dashboard = () => {
                 {
                   title: "Predictive Analytics",
                   description: "Anticipate traffic congestion and plan preventive measures with AI-driven forecasts."
+                },
+                {
+                  title: "360° Digital Twin View",
+                  description: "Interact with a fully rotatable 3D model of your city's traffic infrastructure."
                 }
               ].map((feature, i) => (
                 <div 

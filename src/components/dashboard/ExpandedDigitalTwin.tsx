@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
@@ -469,6 +468,14 @@ const ExpandedDigitalTwin = () => {
   }, []);
 
   useEffect(() => {
+    if (isRotating) {
+      console.log("Started rotation");
+    } else {
+      console.log("Stopped rotation");
+    }
+  }, [isRotating]);
+
+  useEffect(() => {
     if (congestionOverlayRef.current) {
       congestionOverlayRef.current.visible = activeView === 'congestion';
     }
@@ -506,7 +513,18 @@ const ExpandedDigitalTwin = () => {
   };
 
   const toggleRotation = () => {
-    setIsRotating(!isRotating);
+    setIsRotating(prevState => !prevState);
+    console.log("Toggle rotation:", !isRotating);
+  };
+
+  const increaseRotationSpeed = () => {
+    rotationSpeedRef.current = Math.min(0.02, rotationSpeedRef.current + 0.002);
+    console.log("Increased rotation speed:", rotationSpeedRef.current);
+  };
+
+  const decreaseRotationSpeed = () => {
+    rotationSpeedRef.current = Math.max(0.001, rotationSpeedRef.current - 0.002);
+    console.log("Decreased rotation speed:", rotationSpeedRef.current);
   };
 
   return (
@@ -529,14 +547,26 @@ const ExpandedDigitalTwin = () => {
             Zoom Out
           </Button>
           <Button 
-            variant="outline" 
+            variant={isRotating ? "default" : "outline"}
             size="sm" 
-            onClick={toggleRotation} 
-            className={isRotating ? "bg-blue-100 dark:bg-blue-900" : ""}
+            onClick={toggleRotation}
+            className={isRotating ? "bg-blue-500 text-white hover:bg-blue-600" : ""}
           >
             <Rotate3d className="h-4 w-4 mr-1" />
             {isRotating ? "Stop Rotation" : "Rotate"}
           </Button>
+          {isRotating && (
+            <>
+              <Button variant="outline" size="sm" onClick={increaseRotationSpeed}>
+                <RotateCw className="h-4 w-4 mr-1" />
+                Speed +
+              </Button>
+              <Button variant="outline" size="sm" onClick={decreaseRotationSpeed}>
+                <RotateCcw className="h-4 w-4 mr-1" />
+                Speed -
+              </Button>
+            </>
+          )}
           <Button variant="outline" size="sm" onClick={handleResetView}>
             <RotateCcw className="h-4 w-4 mr-1" />
             Reset View
