@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation, Rotate3d } from 'lucide-react';
+import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const ExpandedDigitalTwin = () => {
@@ -15,8 +15,6 @@ const ExpandedDigitalTwin = () => {
   const [activeView, setActiveView] = useState<string>('3d');
   const congestionOverlayRef = useRef<THREE.Group | null>(null);
   const trafficLightsRef = useRef<any[]>([]);
-  const [isRotating, setIsRotating] = useState<boolean>(false);
-  const rotationSpeedRef = useRef<number>(0.01);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -433,10 +431,6 @@ const ExpandedDigitalTwin = () => {
         });
       }
 
-      if (isRotating && sceneRef.current) {
-        sceneRef.current.rotation.y += rotationSpeedRef.current;
-      }
-
       renderer.render(scene, camera);
     };
 
@@ -465,14 +459,6 @@ const ExpandedDigitalTwin = () => {
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (isRotating) {
-      console.log("Auto-rotation started: 360° view enabled");
-    } else {
-      console.log("Auto-rotation stopped");
-    }
-  }, [isRotating]);
 
   useEffect(() => {
     if (congestionOverlayRef.current) {
@@ -507,12 +493,7 @@ const ExpandedDigitalTwin = () => {
       cameraRef.current.position.set(0, 40, 70);
       cameraRef.current.lookAt(0, 0, 0);
       sceneRef.current.rotation.y = 0;
-      setIsRotating(false);
     }
-  };
-
-  const toggleRotation = () => {
-    setIsRotating(prevState => !prevState);
   };
 
   return (
@@ -533,15 +514,6 @@ const ExpandedDigitalTwin = () => {
           <Button variant="outline" size="sm" onClick={handleZoomOut}>
             <ZoomOut className="h-4 w-4 mr-1" />
             Zoom Out
-          </Button>
-          <Button 
-            variant={isRotating ? "default" : "outline"}
-            size="sm" 
-            onClick={toggleRotation}
-            className={isRotating ? "bg-blue-500 text-white hover:bg-blue-600" : ""}
-          >
-            <Rotate3d className="h-4 w-4 mr-1" />
-            {isRotating ? "Stop Auto-Rotate" : "Auto-Rotate 360°"}
           </Button>
           <Button variant="outline" size="sm" onClick={handleResetView}>
             <RotateCcw className="h-4 w-4 mr-1" />
