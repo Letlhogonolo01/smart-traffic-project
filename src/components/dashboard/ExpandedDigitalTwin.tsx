@@ -1,8 +1,9 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation } from 'lucide-react';
+import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation, RotateCw, Rotate3d } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const ExpandedDigitalTwin = () => {
@@ -15,6 +16,8 @@ const ExpandedDigitalTwin = () => {
   const [activeView, setActiveView] = useState<string>('3d');
   const congestionOverlayRef = useRef<THREE.Group | null>(null);
   const trafficLightsRef = useRef<any[]>([]);
+  const [isRotating, setIsRotating] = useState<boolean>(false);
+  const rotationSpeedRef = useRef<number>(0.005);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -215,6 +218,8 @@ const ExpandedDigitalTwin = () => {
       createTrafficLight(40, 6),
       createTrafficLight(40, -6),
     ];
+
+    trafficLightsRef.current = trafficLights;
 
     const congestionGroup = new THREE.Group();
     congestionGroup.visible = false;
@@ -429,6 +434,11 @@ const ExpandedDigitalTwin = () => {
         });
       }
 
+      // Rotate the scene if rotation is enabled
+      if (isRotating && sceneRef.current) {
+        sceneRef.current.rotation.y += rotationSpeedRef.current;
+      }
+
       renderer.render(scene, camera);
     };
 
@@ -487,10 +497,16 @@ const ExpandedDigitalTwin = () => {
   };
 
   const handleResetView = () => {
-    if (cameraRef.current) {
+    if (cameraRef.current && sceneRef.current) {
       cameraRef.current.position.set(0, 40, 70);
       cameraRef.current.lookAt(0, 0, 0);
+      sceneRef.current.rotation.y = 0;
+      setIsRotating(false);
     }
+  };
+
+  const toggleRotation = () => {
+    setIsRotating(!isRotating);
   };
 
   return (
@@ -511,6 +527,15 @@ const ExpandedDigitalTwin = () => {
           <Button variant="outline" size="sm" onClick={handleZoomOut}>
             <ZoomOut className="h-4 w-4 mr-1" />
             Zoom Out
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleRotation} 
+            className={isRotating ? "bg-blue-100 dark:bg-blue-900" : ""}
+          >
+            <Rotate3d className="h-4 w-4 mr-1" />
+            {isRotating ? "Stop Rotation" : "Rotate"}
           </Button>
           <Button variant="outline" size="sm" onClick={handleResetView}>
             <RotateCcw className="h-4 w-4 mr-1" />

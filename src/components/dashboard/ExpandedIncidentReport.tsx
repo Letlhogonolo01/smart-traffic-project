@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -86,7 +87,7 @@ const incidents = [
     },
     media: {
       cameraId: 'CAM-W23',
-      available: false
+      available: true
     }
   },
   {
@@ -316,8 +317,26 @@ const ExpandedIncidentReport = () => {
                           <iframe
                             width="100%"
                             height="100%"
-                            src="https://www.youtube.com/embed/lekdUXv82xQ?autoplay=0&mute=1&start=40"
+                            src="https://www.youtube.com/embed/lekdUXv82xQ?autoplay=1&mute=1&start=40"
                             title="Traffic Camera Feed"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            className="rounded"
+                          ></iframe>
+                        ) : selectedIncident.type === 'Traffic Jam' ? (
+                          <iframe
+                            width="100%"
+                            height="100%"
+                            src="https://www.youtube.com/embed/Kg0xJvj4-zo?autoplay=1&mute=1"
+                            title="Traffic Jam Camera Feed"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            className="rounded"
+                          ></iframe>
+                        ) : selectedIncident.type === 'Road Work' ? (
+                          <iframe
+                            width="100%"
+                            height="100%"
+                            src="https://www.youtube.com/embed/Anvnvb9DoGI?autoplay=1&mute=1"
+                            title="Road Work Camera Feed"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             className="rounded"
                           ></iframe>
