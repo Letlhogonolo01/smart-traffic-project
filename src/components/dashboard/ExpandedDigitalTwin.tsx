@@ -1,8 +1,9 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation } from 'lucide-react';
+import { AlertTriangle, RotateCcw, ZoomIn, ZoomOut, Navigation, RotateCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const ExpandedDigitalTwin = () => {
@@ -15,6 +16,8 @@ const ExpandedDigitalTwin = () => {
   const [activeView, setActiveView] = useState<string>('3d');
   const congestionOverlayRef = useRef<THREE.Group | null>(null);
   const trafficLightsRef = useRef<any[]>([]);
+  const [isAutoRotating, setIsAutoRotating] = useState<boolean>(false);
+  const autoRotateAngleRef = useRef<number>(0);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -24,25 +27,21 @@ const ExpandedDigitalTwin = () => {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // Create scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
     sceneRef.current = scene;
 
-    // Create camera
     const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
     camera.position.set(0, 40, 70);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    // Create renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
     renderer.shadowMap.enabled = true;
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Add lighting
     const ambientLight = new THREE.AmbientLight(0x404040, 2);
     scene.add(ambientLight);
 
@@ -51,7 +50,6 @@ const ExpandedDigitalTwin = () => {
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
-    // Create ground
     const groundGeometry = new THREE.PlaneGeometry(200, 200);
     const groundMaterial = new THREE.MeshStandardMaterial({ 
       color: 0x1a5b1a, 
@@ -62,7 +60,6 @@ const ExpandedDigitalTwin = () => {
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // Create roads
     const createRoad = (width: number, length: number, x: number, z: number, rotation = 0) => {
       const roadGeometry = new THREE.PlaneGeometry(width, length);
       const roadMaterial = new THREE.MeshStandardMaterial({ 
@@ -108,7 +105,6 @@ const ExpandedDigitalTwin = () => {
     createRoad(12, 200, -40, 0);
     createRoad(12, 200, 40, 0);
 
-    // Create buildings
     const createBuilding = (x: number, z: number, width: number, depth: number, height: number, color: number) => {
       const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
       const buildingMaterial = new THREE.MeshStandardMaterial({ color });
@@ -356,6 +352,17 @@ const ExpandedDigitalTwin = () => {
         }
       });
 
+      // Auto-rotate camera if enabled
+      if (isAutoRotating && cameraRef.current) {
+        autoRotateAngleRef.current += 0.008;
+        const radius = 70;
+        const height = 40;
+        cameraRef.current.position.x = Math.cos(autoRotateAngleRef.current) * radius;
+        cameraRef.current.position.z = Math.sin(autoRotateAngleRef.current) * radius;
+        cameraRef.current.position.y = height;
+        cameraRef.current.lookAt(0, 0, 0);
+      }
+
       cars.forEach((car, i) => {
         if (i < 5 || (i >= 13 && i < 17) || (i >= 17 && i < 21)) {
           let speed = 0.2;
@@ -458,7 +465,7 @@ const ExpandedDigitalTwin = () => {
         rendererRef.current.dispose();
       }
     };
-  }, []);
+  }, [isAutoRotating]);
 
   useEffect(() => {
     if (congestionOverlayRef.current) {
@@ -467,7 +474,7 @@ const ExpandedDigitalTwin = () => {
   }, [activeView]);
 
   const handleZoomIn = () => {
-    if (cameraRef.current) {
+    if (cameraRef.current && !isAutoRotating) {
       const currentPosition = cameraRef.current.position.clone();
       const direction = new THREE.Vector3(0, 0, 0).sub(currentPosition).normalize();
       const newPosition = currentPosition.add(direction.multiplyScalar(10));
@@ -478,7 +485,7 @@ const ExpandedDigitalTwin = () => {
   };
 
   const handleZoomOut = () => {
-    if (cameraRef.current) {
+    if (cameraRef.current && !isAutoRotating) {
       const currentPosition = cameraRef.current.position.clone();
       const direction = currentPosition.clone().normalize();
       const newPosition = currentPosition.add(direction.multiplyScalar(10));
@@ -493,7 +500,13 @@ const ExpandedDigitalTwin = () => {
       cameraRef.current.position.set(0, 40, 70);
       cameraRef.current.lookAt(0, 0, 0);
       sceneRef.current.rotation.y = 0;
+      setIsAutoRotating(false);
+      autoRotateAngleRef.current = 0;
     }
+  };
+
+  const toggleAutoRotate = () => {
+    setIsAutoRotating(prev => !prev);
   };
 
   return (
@@ -507,13 +520,22 @@ const ExpandedDigitalTwin = () => {
         </Tabs>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleZoomIn}>
+          <Button variant="outline" size="sm" onClick={handleZoomIn} disabled={isAutoRotating}>
             <ZoomIn className="h-4 w-4 mr-1" />
             Zoom In
           </Button>
-          <Button variant="outline" size="sm" onClick={handleZoomOut}>
+          <Button variant="outline" size="sm" onClick={handleZoomOut} disabled={isAutoRotating}>
             <ZoomOut className="h-4 w-4 mr-1" />
             Zoom Out
+          </Button>
+          <Button 
+            variant={isAutoRotating ? "default" : "outline"} 
+            size="sm" 
+            onClick={toggleAutoRotate}
+            className={isAutoRotating ? "bg-blue-600 text-white hover:bg-blue-700" : ""}
+          >
+            <RotateCw className="h-4 w-4 mr-1" />
+            {isAutoRotating ? "Stop Auto-Rotate" : "Auto-Rotate"}
           </Button>
           <Button variant="outline" size="sm" onClick={handleResetView}>
             <RotateCcw className="h-4 w-4 mr-1" />
