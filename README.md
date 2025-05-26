@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Smart City Project
 
 ## Project info
 
