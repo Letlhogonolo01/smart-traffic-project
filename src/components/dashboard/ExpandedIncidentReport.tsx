@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -317,7 +316,7 @@ const ExpandedIncidentReport = () => {
                           <iframe
                             width="100%"
                             height="100%"
-                            src="https://www.youtube.com/embed/lekdUXv82xQ?autoplay=1&mute=1&start=40"
+                            src="https://www.youtube.com/embed/SwSCMSWP0nI?autoplay=1&mute=1"
                             title="Traffic Camera Feed"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             className="rounded"
