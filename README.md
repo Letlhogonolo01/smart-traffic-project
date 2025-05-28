@@ -32,6 +32,20 @@ Modern cities face growing challenges in traffic congestion, accident response, 
 
 ---
 
+## 📂 Project Structure
+
+smart-traffic-project/
+├── src/
+│   ├── components/      # Reusable UI components
+│   ├── pages/           # Application views/routes
+│   └── main.tsx         # App entry point
+├── public/              # Static assets
+├── tailwind.config.ts   # Tailwind CSS configuration
+├── vite. config.ts       # Vite bundler config
+├── package.json         # Project metadata and dependencies
+
+---
+
 ## 🚀 Getting Started
 
 To run the project locally:
@@ -48,13 +62,3 @@ npm install
 
 # Step 4: Start the development server
 npm run dev
-
-smart-traffic-project/
-├── src/
-│   ├── components/      # Reusable UI components
-│   ├── pages/           # Application views/routes
-│   └── main.tsx         # App entry point
-├── public/              # Static assets
-├── tailwind.config.ts   # Tailwind CSS configuration
-├── vite. config.ts       # Vite bundler config
-├── package.json         # Project metadata and dependencies
